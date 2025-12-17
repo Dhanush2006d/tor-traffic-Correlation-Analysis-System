@@ -1,0 +1,116 @@
+Build a full-stack forensic web application for TOR traffic correlation analysis for a police cyber forensics hackathon.
+
+IMPORTANT CONSTRAINTS:
+- This system must NOT claim TOR de-anonymization.
+- It must use probabilistic, confidence-based traffic correlation only.
+- Use simulated or sanitized data where required.
+- Include clear forensic disclaimers in UI and reports.
+
+BACKEND REQUIREMENTS:
+- Python FastAPI backend
+- SQLite database
+- Use the following libraries:
+  - stem (TOR relay and node descriptor collection)
+  - pyshark (PCAP analysis and packet timing extraction)
+  - pandas, numpy (analysis)
+  - networkx (TOR path graph modeling)
+  - reportlab (PDF report generation)
+  - python-multipart (file uploads)
+
+BACKEND FEATURES:
+1. TOR Node Collection
+   - Collect TOR relay descriptors (real or simulated) using stem
+   - Store node fingerprint, nickname, IP (masked), port, bandwidth, flags (Guard/Middle/Exit), uptime, country
+   - Endpoint to generate simulated TOR nodes for demo purposes
+
+2. Traffic Session Management
+   - Create traffic sessions automatically
+   - Store packet-level data (timestamp, src/dst IP, protocol, size)
+   - Support demo data generation and PCAP upload
+
+3. PCAP Analysis (pyshark)
+   - Upload PCAP files
+   - Parse packet timing, burst patterns, protocol distribution
+   - Map extracted timings to TOR exit node activity
+
+4. Correlation Engine
+   - Time-window based correlation between exit node activity and entry/guard nodes
+   - Multi-session correlation support
+   - Guard node persistence analysis
+   - Pattern similarity detection using statistical methods
+   - Adjustable sensitivity (time-window threshold)
+
+5. Confidence Scoring
+   - Break confidence into:
+     - Timing correlation score
+     - Traffic volume correlation score
+     - Pattern similarity score
+   - Generate overall confidence score (0–100%)
+   - Include confidence justification text explaining contributing factors
+
+6. Analysis Output
+   - Probable TOR circuit visualization (Entry → Middle → Exit)
+   - Probable origin IP shown as masked or inferred (clearly labeled as probabilistic)
+   - Analyst notes field
+
+7. Forensic Report Generation
+   - Generate downloadable PDF report
+   - Include:
+     - Case ID
+     - TOR node details
+     - Timeline reconstruction
+     - Network path visualization
+     - Confidence score breakdown
+     - Analysis justification
+     - Evidence hash (SHA-256)
+     - Legal disclaimer stating probabilistic correlation only
+
+FRONTEND REQUIREMENTS:
+- React frontend
+- Professional cyber-forensics dark theme UI
+- Navigation sections:
+  - Dashboard
+  - TOR Nodes
+  - Timeline
+  - Analysis
+  - Reports
+
+FRONTEND FEATURES:
+1. Dashboard
+   - Statistics: total nodes, sessions, analyses completed
+   - Quick actions: generate demo data, run sample investigation
+
+2. TOR Nodes View
+   - Table of TOR nodes
+   - Filters by node type (Guard/Middle/Exit) and country
+   - Button to collect/generate nodes
+
+3. Timeline View
+   - Session selector
+   - Traffic timeline chart (inbound/outbound over time)
+   - Packet-level table view
+
+4. Analysis View
+   - PCAP upload option
+   - Session selection
+   - Run correlation analysis button
+   - Network path visualization
+   - Confidence gauge with breakdown
+   - Confidence explanation panel
+   - Guard persistence risk indicator
+
+5. Reports View
+   - List of completed analyses
+   - Download full forensic report as PDF
+
+ADDITIONAL REQUIREMENTS:
+- Include CORS support
+- Include API documentation via FastAPI /docs
+- Include sample/demo data so the app works immediately
+- Ensure the app runs fully inside Replit
+- Use clear police-friendly language throughout the UI
+
+OUTPUT:
+- Generate the complete working application
+- Backend and frontend fully connected
+- Ready for live demo via Replit URL
