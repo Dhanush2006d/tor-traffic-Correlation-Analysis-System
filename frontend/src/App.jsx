@@ -1,11 +1,12 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
-import { Shield, Network, Clock, Search, FileText, Activity } from 'lucide-react';
+import { Shield, Network, Clock, Search, FileText, Activity, Globe } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import Nodes from './pages/Nodes';
 import Timeline from './pages/Timeline';
 import Analysis from './pages/Analysis';
 import CaseWorkspace from './pages/CaseWorkspace';
+import OSINTWorkspace from './components/osint/OSINTWorkspace';
 import Reports from './pages/Reports';
 
 function App() {
@@ -31,6 +32,7 @@ function App() {
               <NavItem to="/nodes" icon={Network} label="TOR Nodes" />
               <NavItem to="/timeline" icon={Clock} label="Timeline" />
               <NavItem to="/analysis" icon={Search} label="Analysis" />
+              <NavItem to="/osint" icon={Globe} label="OSINT Hub" />
               <NavItem to="/reports" icon={FileText} label="Reports" />
             </div>
           </div>
@@ -53,6 +55,7 @@ function App() {
             <Route path="/timeline" element={<Timeline />} />
             <Route path="/analysis" element={<Navigate to="/case/demo-case" replace />} />
             <Route path="/case/:caseId" element={<CaseWorkspace />} />
+            <Route path="/osint" element={<OSINTWorkspace />} />
             <Route path="/reports" element={<Reports />} />
           </Routes>
         </main>

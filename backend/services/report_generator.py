@@ -2,10 +2,70 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, Flowable
 from reportlab.platypus import PageBreak, HRFlowable
+from reportlab.graphics.shapes import Drawing, Wedge, String, Line, Circle
+from reportlab.graphics import renderPDF
 from datetime import datetime
 import os
+import math
+
+from reportlab.graphics.shapes import Drawing, Wedge, String, Line, Circle
+from reportlab.graphics import renderPDF
+
+class GaugeChart(Flowable):
+    def __init__(self, score, width=200, height=100):
+        Flowable.__init__(self)
+        self.score = score
+        self.width = width
+        self.height = height
+
+    def wrap(self, availWidth, availHeight):
+        return self.width, self.height
+
+    def draw(self):
+        # We use a Drawing object for better shape handling
+        d = Drawing(self.width, self.height)
+        
+        cx, cy = self.width / 2.0, 0.0
+        radius = float(self.height - 10)
+        
+        # Draw the Sectors (Left to Right)
+        # Left Zone (120 to 180 degrees) - Low Score (0-33%) -> Green (Safe)
+        d.add(Wedge(cx, cy, radius, 120.1, 59.8, fillColor=colors.HexColor('#228b22'), strokeColor=None))
+        
+        # Middle Zone (60 to 120 degrees) - Medium Score (33-66%) -> Orange (Caution)
+        d.add(Wedge(cx, cy, radius, 60.1, 59.8, fillColor=colors.HexColor('#FFA500'), strokeColor=None))
+        
+        # Right Zone (0 to 60 degrees) - High Score (66-100%) -> Red (Danger)
+        d.add(Wedge(cx, cy, radius, 0.1, 59.8, fillColor=colors.HexColor('#dc143c'), strokeColor=None))
+        
+        # Inner White Wedge (Mask to create Arc effect)
+        # We start effectively from 0 to 180 to cover the center
+        r_inner = radius * 0.6
+        d.add(Wedge(cx, cy, r_inner, 0.1, 179.8, fillColor=colors.white, strokeColor=colors.white))
+        
+        # Needle
+        # Score 0 -> 180 deg (Left/Green), Score 100 -> 0 deg (Right/Red)
+        angle_deg = 180 - (self.score * 1.8)
+        # Ensure angle is within bounds
+        angle_deg = max(0.0, min(180.0, float(angle_deg)))
+        angle_rad = math.radians(angle_deg)
+        
+        needle_len = radius * 0.9
+        nx = cx + needle_len * math.cos(angle_rad)
+        ny = cy + needle_len * math.sin(angle_rad)
+        
+        # Draw needle line
+        d.add(Line(cx, cy, nx, ny, strokeColor=colors.black, strokeWidth=4))
+        # Pivot point
+        d.add(Circle(cx, cy, 7, fillColor=colors.black, strokeColor=None))
+        
+        # Text
+        d.add(String(cx, cy + 25, f"{self.score:.1f}%", fontSize=16, fontName="Helvetica-Bold", textAnchor="middle", fillColor=colors.black))
+        
+        # Draw the drawing onto the canvas
+        renderPDF.draw(d, self.canv, 0, 0)
 
 class ForensicReportGenerator:
     def __init__(self, output_dir: str = "reports"):
@@ -50,24 +110,13 @@ class ForensicReportGenerator:
         ))
         
         self.styles.add(ParagraphStyle(
-            name='ConfidenceHigh',
+            name='ActionItem',
             parent=self.styles['Normal'],
-            fontSize=12,
-            textColor=colors.HexColor('#228b22')
-        ))
-        
-        self.styles.add(ParagraphStyle(
-            name='ConfidenceMedium',
-            parent=self.styles['Normal'],
-            fontSize=12,
-            textColor=colors.HexColor('#daa520')
-        ))
-        
-        self.styles.add(ParagraphStyle(
-            name='ConfidenceLow',
-            parent=self.styles['Normal'],
-            fontSize=12,
-            textColor=colors.HexColor('#dc143c')
+            fontSize=11,
+            leading=14,
+            bulletIndent=10,
+            leftIndent=20,
+            spaceAfter=5
         ))
     
     def generate_report(self, analysis_data: dict) -> str:
@@ -134,13 +183,14 @@ class ForensicReportGenerator:
         pattern_score = analysis_data.get('pattern_score', 0)
         overall = analysis_data.get('overall_confidence', 0)
         
-        def get_confidence_color(score):
-            if score >= 60:
-                return colors.HexColor('#228b22')
-            elif score >= 30:
-                return colors.HexColor('#daa520')
-            else:
-                return colors.HexColor('#dc143c')
+        # --- Gauge Chart Integration ---
+        story.append(Paragraph(f"Overall Confidence Score: {overall:.1f}%", self.styles['Heading3']))
+        story.append(Spacer(1, 10))
+        
+        gauge = GaugeChart(overall)
+        story.append(gauge)
+        story.append(Spacer(1, 20))
+        # -------------------------------
         
         confidence_data = [
             ["Metric", "Score", "Interpretation"],
@@ -165,6 +215,17 @@ class ForensicReportGenerator:
         ]))
         story.append(conf_table)
         story.append(Spacer(1, 20))
+        
+        # --- Recommended Actions (SOP) ---
+        story.append(Paragraph("RECOMMENDED ACTIONS (SOP)", self.styles['SectionHeader']))
+        
+        # Pass full data for dynamic generation
+        actions = self._get_recommended_actions(analysis_data)
+        for action in actions:
+            story.append(Paragraph(f"• {action}", self.styles['ActionItem']))
+            
+        story.append(Spacer(1, 20))
+        # -------------------------------
         
         story.append(Paragraph("PROBABLE TOR CIRCUIT PATH", self.styles['SectionHeader']))
         
@@ -200,16 +261,35 @@ class ForensicReportGenerator:
         
         justification = analysis_data.get('justification', 'No justification provided.')
         for para in justification.split('\n\n'):
+            # Simple bolding of key terms
+            para = para.replace("TIMING CORRELATION", "<b>TIMING CORRELATION</b>")
+            para = para.replace("VOLUME CORRELATION", "<b>VOLUME CORRELATION</b>")
+            para = para.replace("PATTERN SIMILARITY", "<b>PATTERN SIMILARITY</b>")
+            para = para.replace("OVERALL CONFIDENCE", "<b>OVERALL CONFIDENCE</b>")
+            
             if para.strip():
                 story.append(Paragraph(para.replace('\n', '<br/>'), self.styles['Normal']))
                 story.append(Spacer(1, 10))
         
         story.append(Spacer(1, 20))
         
-        if analysis_data.get('analyst_notes'):
-            story.append(Paragraph("ANALYST NOTES", self.styles['SectionHeader']))
-            story.append(Paragraph(analysis_data['analyst_notes'], self.styles['Normal']))
-            story.append(Spacer(1, 20))
+        story.append(Paragraph("ANALYST NOTES & OBSERVATIONS", self.styles['SectionHeader']))
+        
+        notes = analysis_data.get('analyst_notes', '')
+        if not notes or notes == "Auto-generated from Case Workspace":
+            # Generate dynamic observations if notes are generic
+            obs = []
+            if timing_score > 60: obs.append("Automated timing patterns suggest non-human activity.")
+            if volume_score > 60: obs.append("High volume throughput indicates potential file transfer.")
+            if pattern_score > 60: obs.append("Packet size uniformity matches TOR fixed-cell structure.")
+            
+            if obs: 
+                notes = "<b>System Observation:</b> " + " ".join(obs)
+            else:
+                notes = "No specific anomalies noted beyond standard logging."
+                
+        story.append(Paragraph(notes, self.styles['Normal']))
+        story.append(Spacer(1, 20))
         
         story.append(Paragraph("EVIDENCE INTEGRITY", self.styles['SectionHeader']))
         
@@ -248,3 +328,39 @@ class ForensicReportGenerator:
             return "Weak correlation detected"
         else:
             return "Insufficient correlation"
+
+    def _get_recommended_actions(self, data: dict) -> list:
+        """Returns dynamic standard operating procedures based on specific metrics."""
+        actions = []
+        
+        overall = data.get('overall_confidence', 0)
+        timing = data.get('timing_score', 0)
+        volume = data.get('volume_score', 0)
+        pattern = data.get('pattern_score', 0)
+        circuit = data.get('circuit', {})
+        entry_country = circuit.get('entry', {}).get('country', 'Unknown')
+        
+        # 1. Critical Actions (High Overall)
+        if overall >= 75:
+            actions.append(f"<b>CRITICAL ISOLATION:</b> Immediate network isolation of endpoint {data.get('session_id', 'Unknown')} required.")
+            actions.append("<b>Legal Hold:</b> Preserve all access logs from firewall/IDPS for the timeframe: {}.".format(datetime.now().strftime('%Y-%m-%d')))
+        
+        # 2. Timing Specific (C2/Beaconing)
+        if timing >= 60:
+            actions.append("<b>C2 Investigation:</b> Regular interval traffic detected. Scan endpoint for scheduled tasks, cron jobs, or heartbeats.")
+        
+        # 3. Volume Specific (Exfiltration)
+        if volume >= 60:
+            actions.append("<b>Exfiltration Audit:</b> High throughput detected. Audit recent file access timestamps and DLP logs for sensitive data movement.")
+            
+        # 4. Geo-Specific
+        if entry_country != 'Unknown':
+            actions.append(f"<b>Geo-Blocking:</b> Review firewall rules for traffic destination country: {entry_country}.")
+            
+        # 5. Default Actions (if list is short)
+        if len(actions) < 3:
+            actions.append("<b>User Interview:</b> Verify if user has legitimate need for encrypted tunneling tools.")
+            actions.append("<b>Endpoint Scan:</b> Run full antivirus/EDR scan to detect potential TOR client artifacts.")
+            
+        # Dedupe just in case
+        return list(dict.fromkeys(actions))

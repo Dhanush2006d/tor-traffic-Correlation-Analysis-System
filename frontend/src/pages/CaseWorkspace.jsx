@@ -86,7 +86,7 @@ function CaseWorkspace() {
             case 'correlation':
                 return <CorrelationPanel result={analysisResult} />;
             case 'threat-intel':
-                return <ThreatIntelPanel />;
+                return <ThreatIntelPanel caseId={caseId} />;
             case 'alerts':
                 return <AlertsPanel />;
             case 'assistant':

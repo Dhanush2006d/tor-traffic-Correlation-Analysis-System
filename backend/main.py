@@ -8,7 +8,8 @@ from dotenv import load_dotenv
 load_dotenv() # Load environment variables from .env file
 
 from backend.database import init_db, get_connection
-from backend.routers import nodes, sessions, analysis, reports
+
+from backend.routers import nodes, sessions, analysis, reports, osint, threat_intel, stats
 from backend.services.tor_simulator import generate_simulated_nodes, generate_demo_traffic
 import uuid
 from datetime import datetime
@@ -23,18 +24,23 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+# CORS Middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # In production, specify exact domains
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# Include Routers
 app.include_router(nodes.router)
 app.include_router(sessions.router)
 app.include_router(analysis.router)
 app.include_router(reports.router)
+app.include_router(osint.router)
+app.include_router(threat_intel.router)
+app.include_router(stats.router)
 
 @app.on_event("startup")
 async def startup_event():
@@ -105,32 +111,6 @@ async def startup_event():
         print("Demo data initialized successfully!")
     
     conn.close()
-
-@app.get("/api/stats")
-async def get_stats():
-    conn = get_connection()
-    cursor = conn.cursor()
-    
-    cursor.execute("SELECT COUNT(*) as count FROM tor_nodes")
-    total_nodes = cursor.fetchone()['count']
-    
-    cursor.execute("SELECT COUNT(*) as count FROM traffic_sessions")
-    total_sessions = cursor.fetchone()['count']
-    
-    cursor.execute("SELECT COUNT(*) as count FROM analyses")
-    total_analyses = cursor.fetchone()['count']
-    
-    cursor.execute("SELECT COUNT(*) as count FROM analyses WHERE status = 'completed'")
-    completed_analyses = cursor.fetchone()['count']
-    
-    conn.close()
-    
-    return {
-        "total_nodes": total_nodes,
-        "total_sessions": total_sessions,
-        "total_analyses": total_analyses,
-        "completed_analyses": completed_analyses
-    }
 
 @app.get("/api/health")
 async def health_check():

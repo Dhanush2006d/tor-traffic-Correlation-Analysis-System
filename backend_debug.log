@@ -1,0 +1,18 @@
+DEBUG: Starting background scan for Case test-case-123 with indicators: ['8.8.8.8']
+DEBUG: Processing indicator: 8.8.8.8
+DEBUG: Starting background scan for Case demo-case with indicators: ['hiddenwiki.onion']
+DEBUG: Processing indicator: hiddenwiki.onion
+DEBUG: Starting background scan for Case test-case-123 with indicators: ['8.8.8.8']
+DEBUG: Processing indicator: 8.8.8.8
+DEBUG: Starting background scan for Case test-case-123 with indicators: ['8.8.8.8']
+DEBUG: Processing indicator: 8.8.8.8
+DEBUG: Starting background scan for Case test-case-123 with indicators: ['8.8.8.8']
+DEBUG: Processing indicator: 8.8.8.8
+DEBUG: Starting background scan for Case demo-case with indicators: ['1.1.1.1']
+DEBUG: Starting background scan for Case demo-case with indicators: ['1.1.1.1']
+DEBUG: Starting background scan for Case demo-case with indicators: ['1.1.1.1']
+DEBUG: Starting background scan for Case demo-case with indicators: ['8.8.8.8']
+DEBUG: Starting background scan for Case demo-case with indicators: ['8.8.8.8']
+DEBUG: Starting background scan for Case demo-case with indicators: ['hiddenwiki.onion']
+DEBUG: Starting background scan for Case demo-case with indicators: ['999']
+ERROR: Background scan failed: 'NoneType' object does not support item assignment

@@ -55,4 +55,9 @@ export const reportsAPI = {
   deleteReport: (reportId) => api.delete(`/reports/${reportId}`),
 };
 
+export const threatIntelAPI = {
+  scan: (caseId, indicators) => api.post(`/threat-intel/scan/${caseId}`, { indicators }),
+  getMatches: (caseId) => api.get(`/threat-intel/matches/${caseId}`),
+};
+
 export default api;

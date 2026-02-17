@@ -91,6 +91,21 @@ def init_db():
         )
     ''')
     
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS threat_intel (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            case_id TEXT NOT NULL,
+            indicator TEXT NOT NULL,
+            type TEXT NOT NULL,
+            category TEXT,
+            confidence INTEGER DEFAULT 0,
+            source TEXT NOT NULL,
+            severity TEXT DEFAULT 'Low',
+            last_updated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            raw_data TEXT
+        )
+    ''')
+    
     conn.commit()
     conn.close()
 

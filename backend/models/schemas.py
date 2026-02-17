@@ -95,3 +95,15 @@ class StatsResponse(BaseModel):
     total_sessions: int
     total_analyses: int
     completed_analyses: int
+
+class ThreatIntel(BaseModel):
+    id: Optional[int] = None
+    case_id: str
+    indicator: str
+    type: str # IP, Domain, Hash
+    category: Optional[str] = None
+    confidence: int = 0
+    source: str
+    severity: str = "Low"
+    last_updated: Optional[datetime] = None
+    raw_data: Optional[str] = None
