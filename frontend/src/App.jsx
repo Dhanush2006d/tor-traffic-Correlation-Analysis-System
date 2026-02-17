@@ -1,10 +1,11 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from 'react-router-dom';
 import { Shield, Network, Clock, Search, FileText, Activity } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import Nodes from './pages/Nodes';
 import Timeline from './pages/Timeline';
 import Analysis from './pages/Analysis';
+import CaseWorkspace from './pages/CaseWorkspace';
 import Reports from './pages/Reports';
 
 function App() {
@@ -23,7 +24,7 @@ function App() {
               </div>
             </div>
           </div>
-          
+
           <div className="flex-1 p-4">
             <div className="space-y-2">
               <NavItem to="/" icon={Activity} label="Dashboard" />
@@ -33,24 +34,25 @@ function App() {
               <NavItem to="/reports" icon={FileText} label="Reports" />
             </div>
           </div>
-          
+
           <div className="p-4 border-t border-cyber-accent/30">
             <div className="cyber-card rounded-lg p-3">
               <p className="text-xs text-cyber-warning font-medium mb-1">DISCLAIMER</p>
               <p className="text-xs text-cyber-muted leading-relaxed">
-                This system provides probabilistic correlation analysis only. 
+                This system provides probabilistic correlation analysis only.
                 Results are NOT definitive identification.
               </p>
             </div>
           </div>
         </nav>
-        
+
         <main className="flex-1 overflow-auto">
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/nodes" element={<Nodes />} />
             <Route path="/timeline" element={<Timeline />} />
-            <Route path="/analysis" element={<Analysis />} />
+            <Route path="/analysis" element={<Navigate to="/case/demo-case" replace />} />
+            <Route path="/case/:caseId" element={<CaseWorkspace />} />
             <Route path="/reports" element={<Reports />} />
           </Routes>
         </main>
@@ -64,10 +66,9 @@ function NavItem({ to, icon: Icon, label }) {
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
-          isActive
-            ? 'bg-cyber-accent text-cyber-highlight cyber-glow'
-            : 'text-cyber-muted hover:bg-cyber-secondary hover:text-cyber-text'
+        `flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive
+          ? 'bg-cyber-accent text-cyber-highlight cyber-glow'
+          : 'text-cyber-muted hover:bg-cyber-secondary hover:text-cyber-text'
         }`
       }
     >

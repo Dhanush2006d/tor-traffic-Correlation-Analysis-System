@@ -33,7 +33,7 @@ export const sessionsAPI = {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
   },
-  getPackets: (sessionId, limit = 500, offset = 0) => 
+  getPackets: (sessionId, limit = 500, offset = 0) =>
     api.get(`/sessions/${sessionId}/packets`, { params: { limit, offset } }),
   deleteSession: (sessionId) => api.delete(`/sessions/${sessionId}`),
 };
@@ -41,6 +41,7 @@ export const sessionsAPI = {
 export const analysisAPI = {
   getAnalyses: () => api.get('/analysis/'),
   getAnalysis: (caseId) => api.get(`/analysis/${caseId}`),
+  getInsights: (sessionId) => api.get(`/analysis/${sessionId}/insights`),
   runAnalysis: (data) => api.post('/analysis/run', data),
   updateNotes: (caseId, notes) => api.post(`/analysis/${caseId}/notes?notes=${encodeURIComponent(notes)}`),
   deleteAnalysis: (caseId) => api.delete(`/analysis/${caseId}`),

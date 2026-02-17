@@ -3,6 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, HTMLResponse
 import os
+from dotenv import load_dotenv
+
+load_dotenv() # Load environment variables from .env file
 
 from backend.database import init_db, get_connection
 from backend.routers import nodes, sessions, analysis, reports

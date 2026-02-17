@@ -35,7 +35,7 @@ async def generate_report(case_id: str):
     
     analysis_dict = dict(analysis)
     
-    circuit = {"entry": None, "middle": None, "exit": None}
+    circuit = {"entry": {}, "middle": {}, "exit": {}}
     
     if analysis_dict.get('entry_node_id'):
         cursor.execute("SELECT * FROM tor_nodes WHERE id = ?", (analysis_dict['entry_node_id'],))
